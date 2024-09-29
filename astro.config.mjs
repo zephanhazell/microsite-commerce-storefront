@@ -120,9 +120,13 @@ export default defineConfig({
           //   label: 'Anatomy of a dropin',
           //   link: '/dropins/all/anatomy/'
           // },
+          // {
+          //   label: 'Installing dropins',
+          //   link: '/dropins/all/installing/'
+          // },
           {
-            label: 'Installing dropins',
-            link: '/dropins/all/installing/'
+            label: 'Customizing dropins',
+            link: '/dropins/all/customizing/'
           },
           {
             label: 'Branding dropins',
@@ -135,10 +139,6 @@ export default defineConfig({
           {
             label: 'Styling dropins',
             link: '/dropins/all/styling/'
-          },
-          {
-            label: 'Extending dropins',
-            link: '/dropins/all/extending/'
           },
           // {
           //   label: 'Enriching dropins',
