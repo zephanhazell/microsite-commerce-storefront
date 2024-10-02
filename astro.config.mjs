@@ -119,6 +119,10 @@ export default defineConfig({
             link: '/implementation/'
           },
           {
+            label: 'Planning',
+            link: '/implementation/planning/'
+          },
+          {
             label: 'Project setup',
             link: '/implementation/project-setup/'
           },
@@ -127,7 +131,7 @@ export default defineConfig({
             link: '/implementation/marketing/'
           },
           {
-            label: 'Prepare for launch',
+            label: 'Launch preparation',
             link: '/implementation/launch/'
           },
         ]

@@ -1,0 +1,138 @@
+---
+title: Discovery and preparation
+description: Learn about Adobe Commerce on Edge Delivery Services requirements, data validation, dropins, and Luma Bridge implementation.
+---
+
+Before starting any Edge Delivery + Commerce project a discovery phase has to be conducted to scope the project and ensure that there are no major roadblocks or risks for the project. This is important as Adobe Commerce is a highly customizable platform with the majority of users leveraging extensions. Migrating a Commerce site to Edge Delivery is very similar to move to a headless storefront (like PWA Studio). This means you have to ensure that all required data is provided via APIs.
+
+## Commerce requirements
+
+* Adobe Commerce
+
+  * Cloud or on-prem license required.
+  * Minimum version: 2.4.4. 
+  * Upgrade to 2.4.7 version with storefront compatibility package installed is required for transactional websites to use commerce dropin components (Cart, Checkout, UserAuth and Account).
+  * Minimum PHP version: 8.1 (Version 8.3/8.2 if AC 2.4.7)
+
+* When not using Adobe Commerce, most of the steps in this document are not applicable. You will still be able to leverage some patterns though.
+
+## Gather a list of Commerce extensions
+
+* Gather a list of extensions which are actively used and which are used in the frontend.
+
+* Clarify which extensions could be replaced by out of the box Adobe Commerce functionality. For example, third-party search engines (Algolia) can be replaced by [Live Search](https://experienceleague.adobe.com/docs/commerce-merchant-services/live-search/overview.html?lang=en).
+
+* Define which extension data (e.g. reviews) is required on the frontend and how the data is provided.
+    
+  * Clarify if extensions expose an API ([Core GraphQL](https://developer.adobe.com/commerce/webapi/graphql/)) which could be used to access data (e.g. [Amasty Labels](https://amasty.com/docs/doku.php?id=magento_2:product_labels)).
+    
+  * Otherwise, create action item to expose required data via API.
+
+    * This can happen by either customizing the Catalog Service exporter to export additional custom data to Catalog Service.
+    * or by creating a custom Core GraphQL query.
+    * or by using [API mesh](https://experienceleague.adobe.com/docs/commerce-learn/tutorials/adobe-developer-app-builder/api-mesh/getting-started-api-mesh.html?lang=en).
+
+* Define delivery options (shipping/BOPIS) and payment and tax providers customer uses:
+    
+  * If 3rd party solutions are leveraged, clarify if they expose APIs on the frontend and if they provide their own set of dropin components for the frontend integration
+
+## Enable Catalog Service, Live Search and Product Recommendations
+
+* What are Commerce SaaS services?
+  
+  * A set of multi tenant services which provide access to storefront data via GraphQL APIs.
+
+  * They are very fast and are not tied to scaling constraints of a customer's Commerce environment.
+
+  * They provide read-only access to catalog data which can drive product detail and list pages, search, navigation and product recommendations.
+    
+  * Synchronised data is stored in "SaaS data space" via IMS, https://experienceleague.adobe.com/docs/commerce-merchant-services/user-guides/integration-services/saas.html?lang=en
+    
+  * Availability and setup of these services is a hard requirement for customers that want to build a storefront on Edge Delivery, because only these APIs provide fast enough responses to build sites with 100 Lighthouse score.
+    
+  * These APIs are available in addition to [Core GraphQL APIs](https://developer.adobe.com/commerce/webapi/graphql/) which are exposed by the Commerce environment.
+    
+    * Core GraphQL APIs are required for transactional features (e.g. cart, checkout, login/logout).
+    
+    * The services include:
+        * Catalog Service
+            * Provides data for product detail pages 
+        * Live Search
+            * Provides data for product listing pages and search, also it complements Catalog Service to be used together for retrieving / searching products (even when customer decides to use some other Search engine rather, because LS complements features of CS alone) so always install LS as well
+        * Product Recommendations
+            * Provides data for product recommendations for the current shopper context.
+            * Surfaced on storefronts as "units" such as "Customers who viewed this product also viewed" and can be placed in several areas of the site. Configured in Adobe Commerce admin.
+
+* **Please schedule a discovery session with the Adobe team to share insights on how your catalog is structured. Please assess if the catalog structure is compatible with the services.**
+
+* Setup Catalog Service, Live Search and PREX according to the documentation.
+  * It is recommended to start with a dedicated Adobe Commerce environment (e.g. staging) that is used during the development phase.
+  * (Recommended) Install Live Search package (as it includes Catalog Service): https://experienceleague.adobe.com/docs/commerce-merchant-services/live-search/onboard/install.html?lang=en. In exceptional cases, Catalog Service can also be setup stand-alone: https://experienceleague.adobe.com/docs/commerce-merchant-services/catalog-service/installation.html?lang=en
+  * Install Product Recommendations: https://experienceleague.adobe.com/docs/commerce-merchant-services/product-recommendations/getting-started/onboarding.html?lang=en
+  * Please also install the following module for GraphQL support [magento/module-data-services-graphql](https://developer.adobe.com/commerce/pwa-studio/integrations/product-recommendations/#:~:text=Adobe%20Commerce.-,Additionally%2C%20you%20need%20to%20install%20the,composer%20require%20magento/module%2Ddata%2Dservices%2Dgraphql,-Create%20recommendation%20units).
+
+* To utilize all features of Live Search and Product Recommendations:
+  * Setup configuration in their respective Admin UI page.
+  * Instrumenting and maturing eventing (gathering clickstream data) on the site (see Marketing Technology section).
+
+* Part of the setup is to synchronize the catalog to a data space. Once the sync is done, collect the configuration parameters required to access the data.
+  * Example: https://main--aem-boilerplate-commerce--hlxsites.hlx.live/configs.json
+
+* **Caution:** When using a single Adobe Commerce environment for multiple stores and only a single store should be migrated to Edge Delivery, please raise this with the Adobe team on Slack to ensure Live Search is activated without disabling Elasticsearch which should continue to drive the search of the other stores.
+
+## Validate Data Export
+
+* Data sync progress can be validated self-service through the Data Management Dashboards for each SaaS service.
+  * [SaaS Data Export Guide](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/saas-data-export/overview) (+troubleshooting)
+  * [Data Management Dashboard](https://experienceleague.adobe.com/en/docs/commerce-admin/systems/data-transfer/data-dashboard)
+
+* Use GraphQL to validate that all products were synchronized and product lookup and search are working. See [GraphQL queries](https://developer.adobe.com/commerce/services/graphql/catalog-service/products/) and [Postman sample collection](https://github.com/magento/adobe-commerce-catalog-service) for queries. 
+
+* For more complex catalogs, reach out to the Adobe team on Slack to validate that the exported data is correct. This might require you to provide a database dump or direct access.
+
+* Please also reach out to the Adobe team if you encounter any currently un-supported use cases, so that they can be enabled in the future.
+
+## Validate option for dropins / widgets
+
+* What are dropins and widgets?
+  * Dropins (e.g. checkout, product detail page) and widgets (search, product list page, search autocomplete) are re-useable components developed and maintained by the Adobe Commerce team.
+  * Dropins and widgets are framework agnostic and can be used in any context (Edge Delivery, AEM, Luma).
+  * Their development roadmap is synchronised to APIs (core, catalog service & live search). So new API features are automatically also available in the dropins/widgets.
+  * Live Search Popover and PLP has two integration paths:
+    * Using the out of the box hosted option where Adobe hosts the JS file
+    * Automatic updates for fixes and small features
+    * Small upgrades available for major or breaking features
+    * Can change some styling
+  * Using the customized option where Adobe provides a reference implementation for the components
+    * Full control of customization and look and feel of sight
+    * You host the library and own the TCO
+
+* Currently the following dropins / widgets  are available:
+  * (GA) Product detail page 
+  * (GA) Product listing page / search 
+  * (VIP) Cart / Minicart
+  * (VIP) Checkout / Order confirmation
+  * (VIP) Account / Authentication
+
+* Please document your use cases and requirements. The Adobe team will help you understand if your use cases and requirements match the current capabilities of dropins / widgets.
+  * If yes, please use them in the project.
+  * If no, please keep the Adobe team updated on your requirements, so that they can be enabled in future product updates.
+
+## Side-by-side Implementation / Luma Bridge
+
+* What is side-by-side or Luma bridge?
+  * Luma bridge is an implementation for Edge Delivery + Commerce storefront projects where the complex transactional part of the store (cart, checkout, account) is re-used instead of being rebuilt during the project.
+  * If the previous discovery steps led to the conclusion that dropins can be used for cart, checkout and account experiences, Luma Bridge is not needed or can be reduced to parts that are not covered by dropins (e.g. heavy customizations).
+  * If existing headless implementatiosn for cart, checkout, account (e.g. [PWA Studio](https://github.com/magento/pwa-studio), [Vue Storefront](https://vuestorefront.io/)) are available, Luma Bridge is not needed.
+  * Rebuilding cart, checkout or account pages as part of the project is usually not feasible.
+  * Instead: Re-use existing cart, checkout and account pages based on Luma PHP. You can use Luma Bridge to route the shopper to the PHP-based cart, checkout and account pages.
+  * Be aware that with a side-by-side / Luma Bridge implementation, you will not achieve a 100 Lighthouse score on cart, checkout and account pages.
+
+* Clarify the architecture of the cart, checkout and account part before the start of the project.
+
+* Luma Bridge is available from:
+  * Adobe Consulting (reach out via Slack)
+  * Atwix (https://www.atwix.com/)
+  * Atama ([open source](https://github.com/AtamaCo/luma-bridge), https://www.atama.co/)
+
+* When using Luma Bridge, please ensure you have engineers on the project with backend PHP knowledge on Adobe Commerce.
