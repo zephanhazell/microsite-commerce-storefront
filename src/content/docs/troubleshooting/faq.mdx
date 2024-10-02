@@ -1,9 +1,11 @@
 ---
 title: Frequently Asked Questions (FAQ)
 description: Find answers to common questions about Edge Delivery Services for Adobe Commerce storefronts.
+tableOfContents:
+  maxHeadingLevel: 2
 ---
 
-## 1. Where can I find technical documentation?
+## Where can I find technical documentation?
 
 * [Storefront dropins](https://experienceleague.adobe.com/developer/commerce/storefront/)
 * [Catalog Service](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/catalog-service/guide-overview)
@@ -12,7 +14,7 @@ description: Find answers to common questions about Edge Delivery Services for A
 * [[AdaptTo] Build Super Fast Storefront Experiences with Edge Delivery Services and Adobe Commerce](https://adapt.to/2023/schedule/build-super-fast-storefront-experiences-with-edge-delivery-services-and-adobe-commerce)
 * [[Summit 2024] Commerce Lab Workbook](https://bit.ly/L445-workbook)
 
-## 2. What should I do if my Catalog Service/Live Search data is missing or corrupted?
+## What should I do if my Catalog Service/Live Search data is missing or corrupted?
 
 Submit a request to Adobe Commerce Support to clear your data space. This deletes all data within Catalog Service/Live Search for a specific environment ID. Be careful not to lear any data space required for production.
 
@@ -32,7 +34,7 @@ bin/magento saas:resync --feed categoryPermissions --cleanup-feed
 
 See the [_SaaS Data Export Guide_](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/saas-data-export/overview) for more information.
 
-## 3. How can I improve the performance of my catalog pages?
+## How can I improve the performance of my catalog pages?
 
 ### Images
 
@@ -69,6 +71,6 @@ Use Preact/HTM or other libraries only when necessary.
 * If you mut embed third-party scripts, try using placeholders to prevent cumulative layout shift (CLS) and load them delayed or when they appear in the viewport (`IntersectionObserver`).
 * Be careful with how you add fonts to the project. Ideally, you should avoid using fonts hosted by third parties.
 
-## 4. How do I deploy custom VCLs to Fastly?
+## How do I deploy custom VCLs to Fastly?
 
 See [Getting started with custom VCL](https://experienceleague.adobe.com/en/docs/commerce-cloud-service/user-guide/cdn/custom-vcl-snippets/fastly-vcl-custom-snippets) in the _Commerce on Cloud Infrastucture Guide_.

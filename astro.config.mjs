@@ -39,6 +39,7 @@ export default defineConfig({
     '/dropins/checkout/checkout-introduction': '/developer/commerce/storefront/dropins/checkout',
     '/dropins/user-account/useraccount-introduction': '/developer/commerce/storefront/dropins/user-account',
     '/dropins/user-auth/userauth-introduction': '/developer/commerce/storefront/dropins/user-auth',
+    '/faq': '/developer/commerce/storefront/troublshooting/faq',
     '/launch': '/developer/commerce/storefront/get-started/launch-checklist',
     '/product-details/pdp-containers': '/developer/commerce/storefront/dropins/product-details/pdp-containers',
     '/product-details/pdp-functions': '/developer/commerce/storefront/dropins/product-details/pdp-functions',
@@ -209,7 +210,7 @@ export default defineConfig({
         autogenerate: {
           directory: '/troubleshooting/'
         }
-      }
+      },
       ]
     }), (await import("@playform/compress")).default({
       CSS: false,
