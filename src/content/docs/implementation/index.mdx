@@ -1,0 +1,448 @@
+---
+title: Headless storefront implementation
+description: Learn how to create and configure a healdess Adobe Commerce storefront with Edge Delivery Services.
+---
+
+{/* We need to update layouts so import directives aren't necesary to use any component */}
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import Tasks from '@components/Tasks.astro';
+import Task from '@components/Task.astro';
+import LinkCard from '@components/LinkCard.astro';
+import Screenshot from '@components/Screenshot.astro';
+import Callouts from '@components/Callouts.astro';
+import OptionsTable from '@components/OptionsTable.astro';
+import { Image } from 'astro:assets';
+import Diagram from '@components/Diagram.astro';
+import CardGrid from '@components/CardGrid.astro';
+import Card from '@components/Card.astro';
+import Aside from '@components/Aside.astro';
+import { Icon } from '@astrojs/starlight/components';
+import Link from '@components/Link.astro';
+import Vocabulary from '@components/Vocabulary.astro';
+import Embed from '@components/Embed.astro';
+
+If you're looking for guidance about launching a headless Adobe Commerce storefront with Adobe Experience Manager [Edge Delivery Services](https://www.aem.live/), you're in the right place! This guide will help you successfully plan, implement, and launch your headless storefront on Edge Delivery Services.
+
+## Big picture
+
+Launching a headless Adobe Commerce storefront on Edge Delivery Services requires some basic planning and implementation steps before launch. Here's an overview of the process:
+
+<Diagram caption="Implementation planning and project delivery.">
+  ![Implementation planning and project delivery.](@images/Commerce.webp)
+</Diagram>
+
+## Discovery and preparation
+
+Before starting any Edge Delivery + Commerce project a discovery phase has to be conducted to scope the project and ensure that there are no major roadblocks or risks for the project. This is important as Adobe Commerce is a highly customizable platform with the majority of users leveraging extensions. Migrating a Commerce site to Edge Delivery is very similar to move to a headless storefront (like PWA Studio). This means you have to ensure that all required data is provided via APIs.
+
+### Commerce requirements
+
+* Adobe Commerce
+
+  * Cloud or on-prem license required.
+  * Minimum version: 2.4.4. 
+  * Upgrade to 2.4.7 version with storefront compatibility package installed is required for transactional websites to use commerce dropin components (Cart, Checkout, UserAuth and Account).
+  * Minimum PHP version: 8.1 (Version 8.3/8.2 if AC 2.4.7)
+
+* When not using Adobe Commerce, most of the steps in this document are not applicable. You will still be able to leverage some patterns though.
+
+### Gather a list of Commerce extensions
+
+* Gather a list of extensions which are actively used and which are used in the frontend.
+
+* Clarify which extensions could be replaced by out of the box Adobe Commerce functionality. For example, third-party search engines (Algolia) can be replaced by [Live Search](https://experienceleague.adobe.com/docs/commerce-merchant-services/live-search/overview.html?lang=en).
+
+* Define which extension data (e.g. reviews) is required on the frontend and how the data is provided.
+    
+  * Clarify if extensions expose an API ([Core GraphQL](https://developer.adobe.com/commerce/webapi/graphql/)) which could be used to access data (e.g. [Amasty Labels](https://amasty.com/docs/doku.php?id=magento_2:product_labels)).
+    
+  * Otherwise, create action item to expose required data via API.
+
+    * This can happen by either customizing the Catalog Service exporter to export additional custom data to Catalog Service.
+    * or by creating a custom Core GraphQL query.
+    * or by using [API mesh](https://experienceleague.adobe.com/docs/commerce-learn/tutorials/adobe-developer-app-builder/api-mesh/getting-started-api-mesh.html?lang=en).
+
+* Define delivery options (shipping/BOPIS) and payment and tax providers customer uses:
+    
+  * If 3rd party solutions are leveraged, clarify if they expose APIs on the frontend and if they provide their own set of dropin components for the frontend integration
+
+### Enable Catalog Service, Live Search and Product Recommendations
+
+* What are Commerce SaaS services?
+  
+  * A set of multi tenant services which provide access to storefront data via GraphQL APIs.
+
+  * They are very fast and are not tied to scaling constraints of a customer's Commerce environment.
+
+  * They provide read-only access to catalog data which can drive product detail and list pages, search, navigation and product recommendations.
+    
+  * Synchronised data is stored in "SaaS data space" via IMS, https://experienceleague.adobe.com/docs/commerce-merchant-services/user-guides/integration-services/saas.html?lang=en
+    
+  * Availability and setup of these services is a hard requirement for customers that want to build a storefront on Edge Delivery, because only these APIs provide fast enough responses to build sites with 100 Lighthouse score.
+    
+  * These APIs are available in addition to [Core GraphQL APIs](https://developer.adobe.com/commerce/webapi/graphql/) which are exposed by the Commerce environment.
+    
+    * Core GraphQL APIs are required for transactional features (e.g. cart, checkout, login/logout).
+    
+    * The services include:
+        * Catalog Service
+            * Provides data for product detail pages 
+        * Live Search
+            * Provides data for product listing pages and search, also it complements Catalog Service to be used together for retrieving / searching products (even when customer decides to use some other Search engine rather, because LS complements features of CS alone) so always install LS as well
+        * Product Recommendations
+            * Provides data for product recommendations for the current shopper context.
+            * Surfaced on storefronts as "units" such as "Customers who viewed this product also viewed" and can be placed in several areas of the site. Configured in Adobe Commerce admin.
+
+* **Please schedule a discovery session with the Adobe team to share insights on how your catalog is structured. Please assess if the catalog structure is compatible with the services.**
+
+* Setup Catalog Service, Live Search and PREX according to the documentation.
+  * It is recommended to start with a dedicated Adobe Commerce environment (e.g. staging) that is used during the development phase.
+  * (Recommended) Install Live Search package (as it includes Catalog Service): https://experienceleague.adobe.com/docs/commerce-merchant-services/live-search/onboard/install.html?lang=en. In exceptional cases, Catalog Service can also be setup stand-alone: https://experienceleague.adobe.com/docs/commerce-merchant-services/catalog-service/installation.html?lang=en
+  * Install Product Recommendations: https://experienceleague.adobe.com/docs/commerce-merchant-services/product-recommendations/getting-started/onboarding.html?lang=en
+  * Please also install the following module for GraphQL support [magento/module-data-services-graphql](https://developer.adobe.com/commerce/pwa-studio/integrations/product-recommendations/#:~:text=Adobe%20Commerce.-,Additionally%2C%20you%20need%20to%20install%20the,composer%20require%20magento/module%2Ddata%2Dservices%2Dgraphql,-Create%20recommendation%20units).
+
+* To utilize all features of Live Search and Product Recommendations:
+  * Setup configuration in their respective Admin UI page.
+  * Instrumenting and maturing eventing (gathering clickstream data) on the site (see Marketing Technology section).
+
+* Part of the setup is to synchronize the catalog to a data space. Once the sync is done, collect the configuration parameters required to access the data.
+  * Example: https://main--aem-boilerplate-commerce--hlxsites.hlx.live/configs.json
+
+* **Caution:** When using a single Adobe Commerce environment for multiple stores and only a single store should be migrated to Edge Delivery, please raise this with the Adobe team on Slack to ensure Live Search is activated without disabling Elasticsearch which should continue to drive the search of the other stores.
+
+### Validate Data Export
+
+* Data sync progress can be validated self-service through the Data Management Dashboards for each SaaS service.
+  * [SaaS Data Export Guide](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/saas-data-export/overview) (+troubleshooting)
+  * [Data Management Dashboard](https://experienceleague.adobe.com/en/docs/commerce-admin/systems/data-transfer/data-dashboard)
+
+* Use GraphQL to validate that all products were synchronized and product lookup and search are working. See [GraphQL queries](https://developer.adobe.com/commerce/services/graphql/catalog-service/products/) and [Postman sample collection](https://github.com/magento/adobe-commerce-catalog-service) for queries. 
+
+* For more complex catalogs, reach out to the Adobe team on Slack to validate that the exported data is correct. This might require you to provide a database dump or direct access.
+
+* Please also reach out to the Adobe team if you encounter any currently un-supported use cases, so that they can be enabled in the future.
+
+### Validate option for dropins / widgets
+
+* What are dropins and widgets?
+  * Dropins (e.g. checkout, product detail page) and widgets (search, product list page, search autocomplete) are re-useable components developed and maintained by the Adobe Commerce team.
+  * Dropins and widgets are framework agnostic and can be used in any context (Edge Delivery, AEM, Luma).
+  * Their development roadmap is synchronised to APIs (core, catalog service & live search). So new API features are automatically also available in the dropins/widgets.
+  * Live Search Popover and PLP has two integration paths:
+    * Using the out of the box hosted option where Adobe hosts the JS file
+    * Automatic updates for fixes and small features
+    * Small upgrades available for major or breaking features
+    * Can change some styling
+  * Using the customized option where Adobe provides a reference implementation for the components
+    * Full control of customization and look and feel of sight
+    * You host the library and own the TCO
+
+* Currently the following dropins / widgets  are available:
+  * (GA) Product detail page 
+  * (GA) Product listing page / search 
+  * (VIP) Cart / Minicart
+  * (VIP) Checkout / Order confirmation
+  * (VIP) Account / Authentication
+
+* Please document your use cases and requirements. The Adobe team will help you understand if your use cases and requirements match the current capabilities of dropins / widgets.
+  * If yes, please use them in the project.
+  * If no, please keep the Adobe team updated on your requirements, so that they can be enabled in future product updates.
+
+### Side-by-side Implementation / Luma Bridge
+
+* What is side-by-side or Luma bridge?
+  * Luma bridge is an implementation for Edge Delivery + Commerce storefront projects where the complex transactional part of the store (cart, checkout, account) is re-used instead of being rebuilt during the project.
+  * If the previous discovery steps led to the conclusion that dropins can be used for cart, checkout and account experiences, Luma Bridge is not needed or can be reduced to parts that are not covered by dropins (e.g. heavy customizations).
+  * If existing headless implementatiosn for cart, checkout, account (e.g. [PWA Studio](https://github.com/magento/pwa-studio), [Vue Storefront](https://vuestorefront.io/)) are available, Luma Bridge is not needed.
+  * Rebuilding cart, checkout or account pages as part of the project is usually not feasible.
+  * Instead: Re-use existing cart, checkout and account pages based on Luma PHP. You can use Luma Bridge to route the shopper to the PHP-based cart, checkout and account pages.
+  * Be aware that with a side-by-side / Luma Bridge implementation, you will not achieve a 100 Lighthouse score on cart, checkout and account pages.
+
+* Clarify the architecture of the cart, checkout and account part before the start of the project.
+
+* Luma Bridge is available from:
+  * Adobe Consulting (reach out via Slack)
+  * Atwix (https://www.atwix.com/)
+  * Atama ([open source](https://github.com/AtamaCo/luma-bridge), https://www.atama.co/)
+
+* When using Luma Bridge, please ensure you have engineers on the project with backend PHP knowledge on Adobe Commerce.
+
+## 2. Project Setup and Commerce Implementation
+
+This section highlights the differences during the implementation phase compared to normal Edge Delivery projects.
+
+### Project Kickoff
+
+* Start project from Commerce boilerplate
+  * Repository: [Edge Delivery + Commerce boilerplate](https://github.com/hlxsites/aem-boilerplate-commerce)
+  * This is a fork of the normal Edge Delivery boilerplate which includes additional code for Commerce
+
+* Setup content source
+  * For document-based authoring with SharePoint or Google Docs only
+  * Content is available as release artifact https://github.com/hlxsites/aem-boilerplate-commerce/releases
+
+### CDN setup
+
+* Decide early which CDN to use. A popular option is Fastly, which is included with the Adobe Commerce license.
+
+* Guidance on Fastly CDN configuration can be requested from the Adobe team via Slack. 
+
+* Configure a subdomain for development (e.g. [aem.customer.com](http://aem.customer.com/)).
+  * **Please ensure that this site is not crawl-able by search engines (e.g. via robots.txt).**
+
+* Setup Edge Delivery CDN configuration according to documentation.
+  * For cache invalidation, a Fastly API key is required. This key can be requested from Adobe Commerce support team.
+  * Ensure compression (e.g. gzip) is correctly working.
+
+* Proxy certain paths back to Adobe Commerce. This is specific to the project, but generally you should at least proxy the following paths:
+  * Core GraphQL (e.g. https://customer-commerce/graphql → /graphql)
+    * Ensure proper CORS headers are sent, so the endpoint can be accessed from hlx.page, hlx.live and localhost:3000 hosts.
+  * Catalog Service / LiveSearch endpoints
+    * Production: https://catalog-service.adobe.io/graphql → /cs-graphql
+    * Sandbox: https://catalog-service-sandbox.adobe.io/graphql → /cs-graphql-sandbox
+    * Please ensure to remove all cookies from requests as Catalog Service has a relatively small HTTP header limit
+  * Product images coming from Adobe Commerce (e.g. /catalog/product/resized/200x200/3/_/3_1_1_12_2.jpeg)
+  * Additional paths required for Luma Bridge.
+
+* Cache Validation
+  
+  * It is fundamental that you validate that caching is working correctly. This should include requests with cookie headers and query parameters. 
+
+   ```bash
+   curl -sI -H 'Fastly-Debug: 1' https://www.bulk.com/uk/ | grep x-cache
+ 
+   x-cache: MISS, HIT, HIT, HIT
+   x-cache-hits: 0, 16, 102, 1
+   ```
+   * x-cache values are read right to left, where the rightmost value represents the customer CDN (Commerce Fastly). This value should indicate a cache HIT.
+
+* Surrogate Key Validation
+  * The default Adobe Commerce Fastly configuration overwrites surrogate keys set by Edge Delivery.
+
+    ```bash
+    curl -sI -H 'Fastly-Debug: 1' https://www.bulk.com/uk/ | grep surrogate-key
+ 
+    surrogate-key: main--bul-eds--thepixel 401e079ea9d66cbdc48fc9bcd3a958206ef36cd2affcd6b672178e7628f RKvjyvNRGjNtCHP3 401e079ea9d66cbdc48fc9bcd3a958206ef36cd2affcd6b672178e7628f_metadata main--bul-eds--thepixel_head
+    ```
+
+    * When correctly set, the surrogate keys should include at least two ref-repo-org references as indicated in the example above.
+
+### Setup Commerce config
+
+* In the starter content, you will find a configs.xlsx file in the root folder. This file is used to expose configuration parameters to the frontend blocks.
+* Update the configuration values with the customer specific Catalog Service header values.
+* Update the configuration values with the Core GraphQL endpoint that was configured as part of the CDN setup.
+* The required values are documented on https://experienceleague.adobe.com/developer/commerce/storefront/references/configurations/.
+
+### Add Commerce dropins / widgets
+
+* Depending on the outcome of the discovery phase, you can add dropins and widgets to the project.
+* You can find the integration patterns for dropins and widgets as pull requests in the [Edge Delivery + Commerce repository](https://github.com/hlxsites/aem-boilerplate-commerce).
+  * The PLP/Search and autocomplete widgets can be fully customized. Feel free to create project specific forks.
+    * https://github.com/adobe/storefront-product-listing-page
+    * Boilerplate uses the following fork with more optimizations: https://github.com/herzog31/storefront-product-listing-page
+      * https://github.com/adobe/storefront-search-as-you-type
+      * Please consider open PRs which might contain unmerged improvements for Edge Delivery.
+
+* The source code of dropins is internal. You can add them to your project as npm packages.
+  * `@dropins/storefront-cart`
+  * `@dropins/storefront-checkout`
+  * `@dropins/storefront-auth`
+  * `@dropins/storefront-order-confirmation`
+  * `@dropins/storefront-pdp`
+  * `@dropins/tools`
+  * It is recommended to use the documented extension patterns for the dropins. You can find the documentation at https://experienceleague.adobe.com/developer/commerce/storefront/product-details/pdp-introduction/.
+
+* If dropins and widgets cannot be used, please use the custom PDP and PLP/Search blocks that come with the Edge Delivery + Commerce boilerplate.
+
+* URL format of catalog pages
+
+  * By default the boilerplate uses [folder mapping](https://www.aem.live/developer/folder-mapping) for product detail pages (PDP) and dedicated pages for product list pages (PLP).
+  * If the customer catalog has a large amount of PLPs, it might make sense to use folder mapping also for PLPs. While a low number of PDPs or PLPs could justify creating dedicated pages for each.
+  * The URL format for folder mapped PDPs looks like this: `/products/{urlKey}/{sku}`. This is to include the SEO relevant urlKey parameter and the SKU which is needed to perform Catalog Service queries. Feel free to customize the format as needed. Advanced customization might have to be done on CDN.
+  * Be aware that Edge Delivery does not like URLs with uppercase letters which might cause issues when customers using uppercase characters in SKUs.
+    * URLs generated by Edge Delivery (e.g. index) will always be fully lowercase.
+    * Product detail page URLs with uppercase letters will however fully work.
+
+### Implement Commerce blocks
+
+* Compared to content blocks, blocks that enable Commerce functionality (e.g. minicart, product teaser, recommendations) can become quite complex.
+
+* Usage of a frontend framework can help with managing the complexity.
+  * In the boilerplate you can find examples of blocks that use a [buildless](https://preactjs.com/guide/v10/getting-started/#no-build-tools-route) version of [Preact](https://preactjs.com/) and [HTM](https://github.com/developit/htm).
+  * Only use it for blocks that require complex state management with different render states. Otherwise stick with plain JavaScript.
+  * Use existing blocks in Commerce boilerplate as reference (e.g. teaser and product recommendations).
+
+* If you want to use React, this is possible, but not recommended. React is usually too heavy (size + execution) to achieve perfect lighthouse scores.
+
+## 3. Marketing Technology / SEO
+
+In addition to typical marketing technology stacks, Adobe Commerce sites usually use Adobe Client Data Layer to expose Commerce data and events. This data can be read by custom analytics implementations and should also be sent back to Adobe Commerce.
+
+### Commerce Instrumentation
+
+* For Live Search and Product Recommendation APIs to work correctly, it is required to collect and send user interaction events to Commerce.
+  * To power intelligent Adobe Sensei features like Intelligent Merchandizing for Live Search and to personalize product recommendations units.
+  * To populate the performance dashboard for Live Search and Product Recommendations which provide information like conversion metrics
+    * https://experienceleague.adobe.com/docs/commerce-merchant-services/product-recommendations/admin/workspace.html?lang=en
+    * https://experienceleague.adobe.com/docs/commerce-merchant-services/live-search/live-search-admin/performance.html?lang=en
+
+* The boilerplate includes [Adobe Client Data Layer](https://github.com/adobe/adobe-client-data-layer) by default.
+  * It uses a custom more lightweight version that is suitable to be loaded early in Edge Delivery. Please have a look at https://github.com/adobe/adobe-client-data-layer/pull/155
+  * To validate events, you can use https://github.com/adobe/adobe-client-data-layer/pull/156
+
+* Events written to ACDL need to comply a specific schema as defined by [Storefront Event SDK](https://github.com/adobe/commerce-events/tree/main/packages/storefront-events-sdk).
+
+* For performance considerations it is highly recommended to write events to ACDL directly without using the Events SDK.
+  * Dropins and widgets will send events to ACDL out of the box. But please double check the correctness of all these events.
+
+* Commerce events should be sent to Snowplow (owned by Adobe Commerce) to continuously learn from the data and improve recommendations and search results.
+  * The boilerplate loads [Storefront Events Collector](https://github.com/adobe/commerce-events/tree/main/packages/storefront-events-collector) in the delayed phase to automatically send those events.
+  * For the collector to work, please ensure that the configs file is properly populated with all configuration parameters. The configuration parameters are a mix between those that are required for Catalog Service access and some specific to data services. The easiest way to retrieve them is using the magento/module-data-services-graphql module which exposes an additional GraphQL.
+
+### Schema.org data (JSON-LD)
+
+* Please ensure that all Commerce pages (in particular PDP & PLP) add schema.org (JSON-LD) annotations to expose product data.
+
+* Make sure you cover at least the following types: WebSite, Product, AggregateRating, Rating, BreadcrumbList.
+
+* Compare to what data was available on the site before migrating to Edge Delivery.
+  * Note: Make sure that SKU's for all variants from products are also included
+  * Use: https://search.google.com/test/rich-results to test 
+  * The PDP dropin in the boilerplate contains an example for JSON-LD data.
+
+* If you are using Google Shopping features (e.g. products available on shopping.google.com), please consider schema.org annotations with critical priority. Invalid data will be flagged by Google which leads to a delisting of the customer's products and financial impact.
+
+### Meta data & Social Media
+
+* Please ensure that all pages including catalog pages (PDP & PLP) the following data set and verified:
+  * Document title via title tag
+  * Metadata via meta tags
+    * `description`
+    * `keywords`
+    * `og:type`
+    * `og:title`
+    * `og:description`
+    * `og:url`
+    * `og:image`
+    * `og:image:secure_url`
+    * `og:product:price:amount`
+    * `og:product:price:currency`
+
+* While Google is fine with metadata set via client-side JavaScript, these will be ignored by other social media platforms like Facebook or Twitter/X. For these platforms, metadata needs to server-side rendered.
+
+* Please leverage the [bulk metadata](https://www.aem.live/docs/bulk-metadata) feature for this and create the metadata sheet in an automated way, for example using [this](https://github.com/hlxsites/aem-boilerplate-commerce/pull/72) script. Alternatively the usage of an edge worker is also possible.
+
+### SEO Considerations
+
+* When PDPs have multiple URLs, please ensure to set a consistent canonical URL for each product.
+* **Ensure that canonical URLs do not point to redirects (301).**
+* Please provide access to Google Search Console / Google Merchant Center to the Adobe team so they can help detect issues after go-live.
+* Submit new sitemaps via the Search Console, as Google takes a while to detect new sitemaps.
+* If the site is using more than one sitemap, ensure that all sitemaps are referenced in robots.txt
+* **Important for multi store setups or stores supporting multiple locales:**
+    * Ensure a correct hreflang setup (see https://www.aem.live/developer/sitemap#specifying-the-primary-language-manually).
+    * You can validate sitemaps using https://technicalseo.com/tools/hreflang/
+    * Please ensure that the store code is part of the URL for every Catalog Service or Live Search request.
+      * This can be assured by proxying the Catalog Service endpoint through Fastly, e.g. [www.merchant.com/de/cs-graphql.](http://www.merchant.com/de/cs-graphql.)
+      * Alternatively you can also add a query parameter. This however does not work with dropins.
+      * This is required, as the Google Bot caches Catalog Service responses without considering headers. Not adding the store code to the URL might lead to wrong data being indexed by Google.
+
+* Ensure proper redirects are set up using the redirects sheet or via CDN:
+    * Fallbacks for any potential URL changes (e.g. product URLs or missing .html suffix)
+    * Redirects that are set up in Adobe Commerce.
+
+## 4. Go Live
+
+Commerce projects usually require much more than a simple CDN switch to go-live. Please ensure the go-live activities are well defined and planned. Please also consider a rollback plan.
+
+### Go-Live Checklist
+
+* Please track tasks that have to be performed as part of the go-live. During the development phase of your project you will encounter tasks around migrating implementations that were done on a development or staging environment to production. It is essential to keep track of these changes, to make them reproducible on the production environment as part of the go-live activities.
+* We discourage scheduling a go-live shortly before the weekend, as the Adobe engineering team might have limited availability fix critical issues if they occur.
+* Please start your list with https://www.aem.live/docs/go-live-checklist. For Commerce sites, please put an increased priority on SEO topics.
+* Additionally, please also consider the following action items.
+    * Switch to Catalog Service production endpoint (https://catalog-service.adobe.io/graphql)
+      * Ensure a production environment is configured in Service Connector (will result in a new environmentId).
+      * Sync production catalog to the new production environment.
+      * Create a new Commerce production API key pair and use public key as x-api-key value.
+      * Double check category IDs and make sure all category pages have a reference to the correct category.
+      * Update environmentId and x-api-key values in .helix/config.xlsx.
+      * Let the Catalog Service team know about the new production environment and go-live date.
+    * Use production GraphQL endpoint yourproject.com/graphql. Needs to be changed in CDN.
+      * Make sure to also use this for all the Sidekick extensions and scripts (e.g. sitemap generation, image importer).
+    * When using Adobe Commerce Fastly, request a new CDN purge token for Commerce production environment.
+      * Update in Sharepoint in .helix/config.xlsx file (authToken and serviceId). 
+    * Verify / Update links for password reset e-mail to match EDS implementation in Commerce admin.
+    * Verify configuration of integrations and payment providers (e.g. reCAPTCHA, Adyen, Bazaarvoice).
+      * Provide and configure production keys.
+      * Verify that the new domains / subdomains are allowlisted and potential backend webhooks are working.
+    * Add robots.txt
+      * Block /drafts path on CDN to prevent any drafts to be publicly accessible on the production URL.
+    * Ensure lighthouse score is green targeting to 100 score on every page (taking into account previous considerations mentioned on this document)
+
+## 5. Frequently Asked Questions
+
+### 1. Where can I find documentation on Edge Delivery Storefront?
+
+* [Documentation Storefront / Dropin](https://experienceleague.adobe.com/developer/commerce/storefront/)
+* [Documentation Catalog Service](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/catalog-service/guide-overview)
+* [Documentation Live Search](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/live-search/overview)
+* [[AEM Gems] Building Storefronts on Edge Delivery Services with Adobe Commerce](https://experienceleaguecommunities.adobe.com/t5/adobe-experience-manager/aem-gems-building-storefronts-on-edge-delivery-services-with/m-p/652692)
+* [[AdaptTo] Build Super Fast Storefront Experiences with Edge Delivery Services and Adobe Commerce](https://adapt.to/2023/schedule/build-super-fast-storefront-experiences-with-edge-delivery-services-and-adobe-commerce)
+* [[Summit 2024] Commerce Lab Workbook](https://bit.ly/L445-workbook)
+
+### 2. Catalog Service / Live Search are missing data or the data is corrupted.
+
+Please contact Adobe Commerce customer support to get your data space wiped / cleared. This will basically delete all data within Catalog Service / Live Search for a specific environment ID. Please be careful to not wipe any data space required for production.
+
+After the data space has been cleaned, you can re-synchronize it using the following commands:
+
+```bash
+bin/magento saas:resync --feed scopesCustomerGroup --cleanup-feed
+bin/magento saas:resync --feed scopesWebsite --cleanup-feed
+bin/magento saas:resync --feed productattributes --cleanup-feed 
+bin/magento saas:resync --feed variants --cleanup-feed 
+bin/magento saas:resync --feed products --cleanup-feed 
+bin/magento saas:resync --feed productoverrides --cleanup-feed 
+bin/magento saas:resync --feed prices --cleanup-feed 
+bin/magento saas:resync --feed categories --cleanup-feed 
+bin/magento saas:resync --feed categoryPermissions --cleanup-feed
+```
+
+You can more information on available commands on https://experienceleague.adobe.com/en/docs/commerce-merchant-services/saas-data-export/overview.
+
+### 3. How can I improve the performance of my catalog pages?
+
+* Images
+  * Images (e.g. for products) should be delivered in the appropriate size and should not be delivered larger than their rendered size. Use Fastly Image Optimizer where possible to deliver images in modern webp format.
+  * Use `loading="eager"` on LCP relevant images and `loading="lazy"` on images with lower priority. Please be aware that these attributes are a hint only for the browser.
+
+* API
+  * Blocks that load data from APIs need to have proper sizing in their loading state to prevent layout shift when they start to render content.
+  * API endpoints should be proxied through CDN to prevent overhead of CORS (OPTIONS calls) and TLS handshakes.
+  * Start GraphQL queries early (e.g. in eager phase)
+
+* Preloading
+  * Frequently used `commerce.js` and `configs.js` files can be loaded early by adding them to `head.html`.
+  * Remove waterfall loading of files. If you know in advance which files are required, load them early or combine them to load fewer files.
+  * You can preload resources / queries in the eager phase of `scripts.js` if they are very heavy. You can use global promises or a link tag with preload attribute in the head to prevent downloading the same resource multiple times.
+
+* Loading Order
+  * Everything that is not relevant for LCP can be loaded progressively (dynamic imports) or delayed (`delayed.js`).
+  * LCP relevant blocks (e.g. product details, product list page) have to be loaded in the eager phase. This means that they need to be the first block on the page and added to the `LCP_BLOCKS` array.
+  * Only load elements that are required. Elements that are not immediately required should be separated and loaded when needed.
+    * Example: Logic for newsletter sign-up can be loaded when the user clicks on the subscribe button.
+    * Example: Minicart block is loaded on every page but only loads lightweight code to display button and a number. Only on click of the button, the full minicart block is loaded.
+
+* Use Preact/HTM or other libraries only when really needed.
+
+* 3rd party integrations:
+  * Prefer APIs over embedding of 3rd party scripts.
+  * If you have to embed 3rd party scripts, try using placeholders to prevent CLS and load them delayed or when they appear in the viewport (`IntersectionObserver`).
+  * Be very careful with how you add fonts to the project. Ideally avoid using fonts hosted by third parties.
+
+### 4. How can I deploy custom VCLs to Fastly that comes with Adobe Commerce?
+
+Please follow https://experienceleague.adobe.com/en/docs/commerce-cloud-service/user-guide/cdn/custom-vcl-snippets/fastly-vcl-custom-snippets

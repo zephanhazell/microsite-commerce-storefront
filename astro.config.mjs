@@ -110,6 +110,15 @@ export default defineConfig({
         }
       },
       {
+        label: 'Storefront Implementation',
+        items: [
+          {
+            label: 'Overview',
+            link: '/implementation/'
+          },
+        ]
+      },
+      {
         label: 'Dropins',
         items: [
           {
