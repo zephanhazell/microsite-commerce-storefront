@@ -119,6 +119,10 @@ export default defineConfig({
             link: '/implementation/'
           },
           {
+            label: 'Search engine optimization',
+            link: '/implementation/search-engine-optimization/'
+          },
+          {
             label: 'Prepare for launch',
             link: '/implementation/launch/'
           },
