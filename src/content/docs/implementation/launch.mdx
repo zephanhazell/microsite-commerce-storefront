@@ -1,0 +1,56 @@
+---
+title: Prepare for Launch
+description: Learn how to launch your Edge Delivery Services for Adobe Commerce storefront project.
+---
+
+import Callouts from '@components/Callouts.astro';
+
+The launch of a new storefront can be an overwhelming and stressful process. If you don't have a checklist, you're likely to forget something. Our Go-Live Checklist is designed specifically to ensure a smooth and successful lauch of your Commerce + Edge Delivery Services storefront.
+
+Adobe Commerce projects usually require much more than a simple content delivery netweork (CDN) switch to go-live. Ensure that the go-live activities are well defined and planned. You should also consider a rollback plan.
+
+## Go-live checklist
+
+* Please track tasks that have to be performed as part of the go-live. During the development phase of your project you will encounter tasks around migrating implementations that were done on a development or staging environment to production. It is essential to keep track of these changes, to make them reproducible on the production environment as part of the go-live activities.
+
+* We discourage scheduling a go-live shortly before the weekend, as the Adobe engineering team might have limited availability fix critical issues if they occur.
+
+* Please start your list with https://www.aem.live/docs/go-live-checklist. For Commerce sites, please put an increased priority on SEO topics.
+
+* Additionally, please also consider the following action items.
+    * Switch to Catalog Service production endpoint (https://catalog-service.adobe.io/graphql)
+      * Ensure a production environment is configured in Service Connector (will result in a new environmentId).
+      * Sync production catalog to the new production environment.
+      * Create a new Commerce production API key pair and use public key as x-api-key value.
+      * Double check category IDs and make sure all category pages have a reference to the correct category.
+      * Update environmentId and x-api-key values in .helix/config.xlsx.
+      * Let the Catalog Service team know about the new production environment and go-live date.
+    * Use production GraphQL endpoint yourproject.com/graphql. Needs to be changed in CDN.
+      * Make sure to also use this for all the Sidekick extensions and scripts (e.g. sitemap generation, image importer).
+    * When using Adobe Commerce Fastly, request a new CDN purge token for Commerce production environment.
+      * Update in Sharepoint in .helix/config.xlsx file (authToken and serviceId). 
+    * Verify / Update links for password reset e-mail to match EDS implementation in Commerce admin.
+    * Verify configuration of integrations and payment providers (e.g. reCAPTCHA, Adyen, Bazaarvoice).
+      * Provide and configure production keys.
+      * Verify that the new domains / subdomains are allowlisted and potential backend webhooks are working.
+    * Add robots.txt
+      * Block /drafts path on CDN to prevent any drafts to be publicly accessible on the production URL.
+    * Ensure lighthouse score is green targeting to 100 score on every page (taking into account previous considerations mentioned on this document)
+
+
+## Documentation
+
+For complete documentation on Launching your storefront, visit the [Launch section](https://www.aem.live/docs/#launch) on the Adobe Experience Manager site or select the direct links below.
+
+<Callouts color="#eb1000">
+
+1. [Go Live Checklist](https://www.aem.live/docs/go-live-checklist): The go-live checklist is a summary of best practices to consider when launching a website.
+1. [Push Invalidation](https://www.aem.live/docs/setup-byo-cdn-push-invalidation): Automatically purge content on your production CDN, whenever an author publishes content changes.
+1. [Cloudflare Worker Setup](https://www.aem.live/docs/byo-cdn-cloudflare-worker-setup): Learn how to configure Cloudflare to deliver content.
+1. [Akamai Setup](https://www.aem.live/docs/byo-cdn-akamai-setup): Discover how to use the Akamai Property Manager to configure a property to deliver content.
+1. [Fastly Setup](https://www.aem.live/docs/byo-cdn-fastly-setup): This guide illustrates how to configure Fastly to deliver content.
+1. [CloudFront Setup](https://www.aem.live/docs/byo-cdn-cloudfront-setup): Set up Amazon Web Services Cloudfront to deliver your AEM site with push invalidation.
+1. [Bring your own DNS](https://www.aem.live/docs/byo-dns): A custom domain without having to set up a content delivery network.
+1. [Redirects](https://www.aem.live/docs/redirects): You can intuitively manage redirects as a spreadsheet called redirects (or redirects.xlsx) in the root of your project folder.
+
+</Callouts>

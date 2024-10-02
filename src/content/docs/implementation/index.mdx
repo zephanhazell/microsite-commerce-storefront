@@ -352,32 +352,3 @@ In addition to typical marketing technology stacks, Adobe Commerce sites usually
 * Ensure proper redirects are set up using the redirects sheet or via CDN:
     * Fallbacks for any potential URL changes (e.g. product URLs or missing .html suffix)
     * Redirects that are set up in Adobe Commerce.
-
-## 4. Go Live
-
-Commerce projects usually require much more than a simple CDN switch to go-live. Please ensure the go-live activities are well defined and planned. Please also consider a rollback plan.
-
-### Go-Live Checklist
-
-* Please track tasks that have to be performed as part of the go-live. During the development phase of your project you will encounter tasks around migrating implementations that were done on a development or staging environment to production. It is essential to keep track of these changes, to make them reproducible on the production environment as part of the go-live activities.
-* We discourage scheduling a go-live shortly before the weekend, as the Adobe engineering team might have limited availability fix critical issues if they occur.
-* Please start your list with https://www.aem.live/docs/go-live-checklist. For Commerce sites, please put an increased priority on SEO topics.
-* Additionally, please also consider the following action items.
-    * Switch to Catalog Service production endpoint (https://catalog-service.adobe.io/graphql)
-      * Ensure a production environment is configured in Service Connector (will result in a new environmentId).
-      * Sync production catalog to the new production environment.
-      * Create a new Commerce production API key pair and use public key as x-api-key value.
-      * Double check category IDs and make sure all category pages have a reference to the correct category.
-      * Update environmentId and x-api-key values in .helix/config.xlsx.
-      * Let the Catalog Service team know about the new production environment and go-live date.
-    * Use production GraphQL endpoint yourproject.com/graphql. Needs to be changed in CDN.
-      * Make sure to also use this for all the Sidekick extensions and scripts (e.g. sitemap generation, image importer).
-    * When using Adobe Commerce Fastly, request a new CDN purge token for Commerce production environment.
-      * Update in Sharepoint in .helix/config.xlsx file (authToken and serviceId). 
-    * Verify / Update links for password reset e-mail to match EDS implementation in Commerce admin.
-    * Verify configuration of integrations and payment providers (e.g. reCAPTCHA, Adyen, Bazaarvoice).
-      * Provide and configure production keys.
-      * Verify that the new domains / subdomains are allowlisted and potential backend webhooks are working.
-    * Add robots.txt
-      * Block /drafts path on CDN to prevent any drafts to be publicly accessible on the production URL.
-    * Ensure lighthouse score is green targeting to 100 score on every page (taking into account previous considerations mentioned on this document)

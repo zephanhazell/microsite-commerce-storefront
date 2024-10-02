@@ -40,6 +40,7 @@ export default defineConfig({
     '/dropins/user-account/useraccount-introduction': '/developer/commerce/storefront/dropins/user-account',
     '/dropins/user-auth/userauth-introduction': '/developer/commerce/storefront/dropins/user-auth',
     '/faq': '/developer/commerce/storefront/troublshooting/faq',
+    '/get-started/launch-checklist': '/developer/commerce/storefront/implementation/launch',
     '/launch': '/developer/commerce/storefront/get-started/launch-checklist',
     '/product-details/pdp-containers': '/developer/commerce/storefront/dropins/product-details/pdp-containers',
     '/product-details/pdp-functions': '/developer/commerce/storefront/dropins/product-details/pdp-functions',
@@ -116,6 +117,10 @@ export default defineConfig({
           {
             label: 'Overview',
             link: '/implementation/'
+          },
+          {
+            label: 'Prepare for launch',
+            link: '/implementation/launch/'
           },
         ]
       },
