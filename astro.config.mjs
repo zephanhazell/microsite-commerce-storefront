@@ -41,6 +41,8 @@ export default defineConfig({
     '/dropins/user-auth/userauth-introduction': '/developer/commerce/storefront/dropins/user-auth',
     '/faq': '/developer/commerce/storefront/troublshooting/faq',
     '/get-started/launch-checklist': '/developer/commerce/storefront/implementation/launch',
+    '/get-started/requirements': '/developer/commerce/storefront/planning/requirements',
+    '/get-started/configurations': '/developer/commerce/storefront/project-setup/commerce-configuration',
     '/launch': '/developer/commerce/storefront/get-started/launch-checklist',
     '/product-details/pdp-containers': '/developer/commerce/storefront/dropins/product-details/pdp-containers',
     '/product-details/pdp-functions': '/developer/commerce/storefront/dropins/product-details/pdp-functions',
@@ -120,11 +122,49 @@ export default defineConfig({
           },
           {
             label: 'Planning',
-            link: '/implementation/planning/'
+            items: [
+              {
+                label: 'Overview',
+                link: '/implementation/planning/'
+              },
+              {
+                label: 'Commerce requirements',
+                link: '/implementation/planning/requirements/'
+              },
+              {
+                label: 'Data export validation',
+                link: '/implementation/planning/data-export-validation/'
+              },
+              {
+                label: 'Luma Bridge',
+                link: '/implementation/planning/luma-bridge/'
+              },
+            ]
           },
           {
             label: 'Project setup',
-            link: '/implementation/project-setup/'
+            items: [
+              {
+                label: 'Overview',
+                link: '/implementation/project-setup/'
+              },
+              {
+                label: 'CDN',
+                link: '/implementation/project-setup/content-delivery-network/'
+              },
+              {
+                label: 'Commerce configuration',
+                link: '/implementation/project-setup/commerce-configuration/'
+              },
+              {
+                label: 'Dropins and widgets',
+                link: '/implementation/project-setup/dropins-and-widgets/'
+              },
+              {
+                label: 'Commerce blocks',
+                link: '/implementation/project-setup/commerce-blocks/'
+              },
+            ]
           },
           {
             label: 'Marketing technology and SEO',

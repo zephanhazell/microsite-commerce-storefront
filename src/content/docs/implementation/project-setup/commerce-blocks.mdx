@@ -1,0 +1,15 @@
+---
+title: Commerce blocks
+description: Implement Commerce blocks in your Storefront.
+---
+
+## Implement Commerce blocks
+
+* Compared to content blocks, blocks that enable Commerce functionality (e.g. minicart, product teaser, recommendations) can become quite complex.
+
+* Usage of a frontend framework can help with managing the complexity.
+  * In the boilerplate you can find examples of blocks that use a [buildless](https://preactjs.com/guide/v10/getting-started/#no-build-tools-route) version of [Preact](https://preactjs.com/) and [HTM](https://github.com/developit/htm).
+  * Only use it for blocks that require complex state management with different render states. Otherwise stick with plain JavaScript.
+  * Use existing blocks in Commerce boilerplate as reference (e.g. teaser and product recommendations).
+
+* If you want to use React, this is possible, but not recommended. React is usually too heavy (size + execution) to achieve perfect lighthouse scores.

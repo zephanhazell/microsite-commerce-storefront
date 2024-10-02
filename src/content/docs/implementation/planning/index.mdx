@@ -9,7 +9,7 @@ Before starting any Edge Delivery + Commerce project a discovery phase has to be
 
 * Adobe Commerce
 
-  * Cloud or on-prem license required.
+  * Cloud or on-premises license required
   * Minimum version: 2.4.4. 
   * Upgrade to 2.4.7 version with storefront compatibility package installed is required for transactional websites to use commerce dropin components (Cart, Checkout, UserAuth and Account).
   * Minimum PHP version: 8.1 (Version 8.3/8.2 if AC 2.4.7)
@@ -80,18 +80,6 @@ Before starting any Edge Delivery + Commerce project a discovery phase has to be
 
 * **Caution:** When using a single Adobe Commerce environment for multiple stores and only a single store should be migrated to Edge Delivery, please raise this with the Adobe team on Slack to ensure Live Search is activated without disabling Elasticsearch which should continue to drive the search of the other stores.
 
-## Validate Data Export
-
-* Data sync progress can be validated self-service through the Data Management Dashboards for each SaaS service.
-  * [SaaS Data Export Guide](https://experienceleague.adobe.com/en/docs/commerce-merchant-services/saas-data-export/overview) (+troubleshooting)
-  * [Data Management Dashboard](https://experienceleague.adobe.com/en/docs/commerce-admin/systems/data-transfer/data-dashboard)
-
-* Use GraphQL to validate that all products were synchronized and product lookup and search are working. See [GraphQL queries](https://developer.adobe.com/commerce/services/graphql/catalog-service/products/) and [Postman sample collection](https://github.com/magento/adobe-commerce-catalog-service) for queries. 
-
-* For more complex catalogs, reach out to the Adobe team on Slack to validate that the exported data is correct. This might require you to provide a database dump or direct access.
-
-* Please also reach out to the Adobe team if you encounter any currently un-supported use cases, so that they can be enabled in the future.
-
 ## Validate option for dropins / widgets
 
 * What are dropins and widgets?
@@ -117,22 +105,3 @@ Before starting any Edge Delivery + Commerce project a discovery phase has to be
 * Please document your use cases and requirements. The Adobe team will help you understand if your use cases and requirements match the current capabilities of dropins / widgets.
   * If yes, please use them in the project.
   * If no, please keep the Adobe team updated on your requirements, so that they can be enabled in future product updates.
-
-## Side-by-side Implementation / Luma Bridge
-
-* What is side-by-side or Luma bridge?
-  * Luma bridge is an implementation for Edge Delivery + Commerce storefront projects where the complex transactional part of the store (cart, checkout, account) is re-used instead of being rebuilt during the project.
-  * If the previous discovery steps led to the conclusion that dropins can be used for cart, checkout and account experiences, Luma Bridge is not needed or can be reduced to parts that are not covered by dropins (e.g. heavy customizations).
-  * If existing headless implementatiosn for cart, checkout, account (e.g. [PWA Studio](https://github.com/magento/pwa-studio), [Vue Storefront](https://vuestorefront.io/)) are available, Luma Bridge is not needed.
-  * Rebuilding cart, checkout or account pages as part of the project is usually not feasible.
-  * Instead: Re-use existing cart, checkout and account pages based on Luma PHP. You can use Luma Bridge to route the shopper to the PHP-based cart, checkout and account pages.
-  * Be aware that with a side-by-side / Luma Bridge implementation, you will not achieve a 100 Lighthouse score on cart, checkout and account pages.
-
-* Clarify the architecture of the cart, checkout and account part before the start of the project.
-
-* Luma Bridge is available from:
-  * Adobe Consulting (reach out via Slack)
-  * Atwix (https://www.atwix.com/)
-  * Atama ([open source](https://github.com/AtamaCo/luma-bridge), https://www.atama.co/)
-
-* When using Luma Bridge, please ensure you have engineers on the project with backend PHP knowledge on Adobe Commerce.
