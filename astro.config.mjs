@@ -119,6 +119,10 @@ export default defineConfig({
             link: '/implementation/'
           },
           {
+            label: 'Project setup',
+            link: '/implementation/project-setup/'
+          },
+          {
             label: 'Marketing technology and SEO',
             link: '/implementation/marketing/'
           },
