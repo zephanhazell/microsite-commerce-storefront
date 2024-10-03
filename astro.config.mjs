@@ -149,7 +149,7 @@ export default defineConfig({
                 link: '/implementation/setup/'
               },
               {
-                label: 'CDN',
+                label: 'Content delivery network',
                 link: '/implementation/setup/content-delivery-network/'
               },
               {
@@ -167,11 +167,11 @@ export default defineConfig({
             ]
           },
           {
-            label: 'Analytics',
+            label: 'Marketing and SEO',
             items: [
               {
                 label: 'Overview',
-                link: '/implementation/analytics/'
+                link: '/implementation/marketing/'
               },
             ]
           },
@@ -183,7 +183,7 @@ export default defineConfig({
                 link: '/implementation/launch/'
               },
               {
-                label: 'Launch checklist',
+                label: 'Checklist',
                 link: '/implementation/launch/checklist/'
               },
             ]
