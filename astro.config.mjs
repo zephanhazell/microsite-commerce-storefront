@@ -41,17 +41,17 @@ export default defineConfig({
     '/dropins/user-auth/userauth-introduction': '/developer/commerce/storefront/dropins/user-auth',
     '/faq': '/developer/commerce/storefront/troublshooting/faq',
     '/get-started/launch-checklist': '/developer/commerce/storefront/implementation/launch',
-    '/get-started/requirements': '/developer/commerce/storefront/planning/requirements',
-    '/get-started/configurations': '/developer/commerce/storefront/project-setup/commerce-configuration',
-    '/launch': '/developer/commerce/storefront/get-started/launch-checklist',
+    '/get-started/requirements': '/developer/commerce/storefront/discovery/requirements',
+    '/get-started/configurations': '/developer/commerce/storefront/setup/commerce-configuration',
+    '/launch': '/developer/commerce/storefront/implementation/launch',
     '/product-details/pdp-containers': '/developer/commerce/storefront/dropins/product-details/pdp-containers',
     '/product-details/pdp-functions': '/developer/commerce/storefront/dropins/product-details/pdp-functions',
     '/product-details/pdp-installation': '/developer/commerce/storefront/dropins/product-details/pdp-installation',
     '/product-details/pdp-introduction': '/developer/commerce/storefront/dropins/product-details/',
     '/product-details/pdp-slots': '/developer/commerce/storefront/dropins/product-details/pdp-slots',
     '/product-details/pdp-styles': '/developer/commerce/storefront/dropins/product-details/pdp-styles',
-    '/references/configurations': '/developer/commerce/storefront/get-started/configurations',
-    '/references/requirements': '/developer/commerce/storefront/get-started/requirements',
+    '/references/configurations': '/developer/commerce/storefront/setup/commerce-configuration',
+    '/references/requirements': '/developer/commerce/storefront/discovery/requirements',
   },
   integrations: [
     tailwind({
@@ -121,58 +121,72 @@ export default defineConfig({
             link: '/implementation/'
           },
           {
-            label: 'Planning',
+            label: 'Discovery',
             items: [
               {
                 label: 'Overview',
-                link: '/implementation/planning/'
+                link: '/implementation/discovery/'
               },
               {
                 label: 'Commerce requirements',
-                link: '/implementation/planning/requirements/'
+                link: '/implementation/discovery/requirements/'
               },
               {
                 label: 'Data export validation',
-                link: '/implementation/planning/data-export-validation/'
+                link: '/implementation/discovery/data-export-validation/'
               },
               {
                 label: 'Luma Bridge',
-                link: '/implementation/planning/luma-bridge/'
+                link: '/implementation/discovery/luma-bridge/'
               },
             ]
           },
           {
-            label: 'Project setup',
+            label: 'Setup',
             items: [
               {
                 label: 'Overview',
-                link: '/implementation/project-setup/'
+                link: '/implementation/setup/'
               },
               {
                 label: 'CDN',
-                link: '/implementation/project-setup/content-delivery-network/'
+                link: '/implementation/setup/content-delivery-network/'
               },
               {
                 label: 'Commerce configuration',
-                link: '/implementation/project-setup/commerce-configuration/'
+                link: '/implementation/setup/commerce-configuration/'
               },
               {
                 label: 'Dropins and widgets',
-                link: '/implementation/project-setup/dropins-and-widgets/'
+                link: '/implementation/setup/dropins-and-widgets/'
               },
               {
                 label: 'Commerce blocks',
-                link: '/implementation/project-setup/commerce-blocks/'
+                link: '/implementation/setup/commerce-blocks/'
               },
             ]
           },
           {
-            label: 'Marketing technology and SEO',
-            link: '/implementation/marketing/'
+            label: 'Analytics',
+            items: [
+              {
+                label: 'Overview',
+                link: '/implementation/analytics/'
+              },
+            ]
           },
           {
-            label: 'Launch preparation',
-            link: '/implementation/launch/'
+            label: 'Launch',
+            items: [
+              {
+                label: 'Overview',
+                link: '/implementation/launch/'
+              },
+              {
+                label: 'Launch checklist',
+                link: '/implementation/launch/checklist/'
+              },
+            ]
           },
         ]
       },
